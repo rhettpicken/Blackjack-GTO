@@ -202,11 +202,12 @@ const Game = {
 
         isSoft = aces > 0 && total <= 21;
 
-        // Check for pair
+        // Check for pair - must be same RANK, not just same value
+        // (10, J, Q, K all have value 10 but are NOT pairs with each other)
         const isPair = hand.length === 2 &&
             hand[0].faceUp !== false &&
             hand[1].faceUp !== false &&
-            hand[0].value === hand[1].value;
+            hand[0].rank === hand[1].rank;
 
         return {
             cards: hand,

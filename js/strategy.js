@@ -200,7 +200,17 @@ const BasicStrategy = {
 
         // Select appropriate explanation
         if (chart === 'pairs') {
-            const pairVal = parseInt(handType.split(',')[0]) || 11;
+            // Parse pair value - handle 'A' for Aces and 'T' for 10-value cards
+            const pairStr = handType.split(',')[0];
+            let pairVal;
+            if (pairStr === 'A') {
+                pairVal = 11;
+            } else if (pairStr === 'T') {
+                pairVal = 10;
+            } else {
+                pairVal = parseInt(pairStr);
+            }
+
             if (pairVal === 11) return explanations['pair_A'];
             if (pairVal === 8) return explanations['pair_8'];
             if (pairVal === 10) return explanations['pair_10'];
