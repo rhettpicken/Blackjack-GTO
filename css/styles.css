@@ -537,16 +537,16 @@ body {
 }
 
 /* ===================================
-   CARDS - Cyberpunk Style
+   CARDS - Classic Casino Style
    =================================== */
 .card {
     width: 70px;
     height: 100px;
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 6px;
+    padding: 5px 6px;
     font-weight: 700;
     position: relative;
     margin-left: -25px;
@@ -562,68 +562,72 @@ body {
 }
 
 .card.face-up {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
-    border: 2px solid var(--neon-cyan);
+    background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 50%, #e8e8e8 100%);
+    border: 1px solid #999;
     box-shadow:
-        0 0 15px var(--neon-cyan-glow),
-        inset 0 0 20px rgba(5, 217, 232, 0.1);
-    color: var(--neon-cyan);
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(5, 217, 232, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    color: #1a1a1a;
 }
 
 .card.face-up.red {
-    border-color: var(--neon-pink);
-    box-shadow:
-        0 0 15px var(--neon-pink-glow),
-        inset 0 0 20px rgba(255, 42, 109, 0.1);
-    color: var(--neon-pink);
+    color: #d40000;
 }
 
 .card.face-down {
     background:
         repeating-linear-gradient(
             45deg,
-            var(--bg-tertiary) 0px,
-            var(--bg-tertiary) 10px,
-            var(--bg-secondary) 10px,
-            var(--bg-secondary) 20px
+            #1a3a5c 0px,
+            #1a3a5c 2px,
+            #15304d 2px,
+            #15304d 4px
         );
-    border: 2px solid var(--neon-purple);
-    box-shadow: 0 0 15px var(--neon-purple-glow);
+    border: 3px solid #c9a227;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(211, 0, 197, 0.3),
+        inset 0 0 30px rgba(0, 0, 0, 0.3);
 }
 
 .card.face-down::before {
-    content: '?';
+    content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.5rem;
-    color: var(--neon-purple);
-    text-shadow: 0 0 10px var(--neon-purple-glow);
+    width: 35px;
+    height: 35px;
+    background:
+        radial-gradient(circle, #c9a227 0%, #c9a227 30%, transparent 30%),
+        radial-gradient(circle at 30% 30%, #c9a227 0%, #c9a227 15%, transparent 15%),
+        radial-gradient(circle at 70% 30%, #c9a227 0%, #c9a227 15%, transparent 15%),
+        radial-gradient(circle at 30% 70%, #c9a227 0%, #c9a227 15%, transparent 15%),
+        radial-gradient(circle at 70% 70%, #c9a227 0%, #c9a227 15%, transparent 15%);
+    opacity: 0.6;
 }
 
 .card-value {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.1rem;
     line-height: 1;
-    text-shadow: 0 0 10px currentColor;
+    font-weight: 700;
 }
 
 .card-suit {
-    font-size: 1.75rem;
+    font-size: 2rem;
     text-align: center;
     line-height: 1;
-    filter: drop-shadow(0 0 5px currentColor);
 }
 
 .card-value-bottom {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.1rem;
     line-height: 1;
     text-align: right;
     transform: rotate(180deg);
-    text-shadow: 0 0 10px currentColor;
+    font-weight: 700;
 }
 
 .hand-total {
