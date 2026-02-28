@@ -41,8 +41,8 @@ const BasicStrategy = {
         15: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],  // A,4
         16: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],  // A,5
         17: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],  // A,6
-        18: ['Ds','Ds','Ds','Ds','Ds','S', 'S', 'H', 'H', 'H'],  // A,7
-        19: ['S', 'S', 'S', 'S', 'Ds','S', 'S', 'S', 'S', 'S'],  // A,8
+        18: ['S', 'Ds','Ds','Ds','Ds','S', 'S', 'H', 'H', 'H'],  // A,7: Stand vs 2, Double vs 3-6, Stand vs 7-8, Hit vs 9-A
+        19: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  // A,8: Always Stand
         20: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  // A,9
         21: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']   // A,10 (Blackjack)
     },
