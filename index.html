@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Blackjack GTO Trainer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Menu Screen -->
+        <div id="menu-screen" class="screen active">
+            <div class="menu-container">
+                <h1 class="game-title">BLACKJACK<span>GTO</span></h1>
+                <p class="subtitle">Basic Strategy Trainer</p>
+
+                <div class="menu-buttons">
+                    <button id="btn-learning-mode" class="menu-btn primary">
+                        <span class="btn-icon">📚</span>
+                        <span class="btn-text">Learning Mode</span>
+                        <span class="btn-desc">See hints before deciding</span>
+                    </button>
+                    <button id="btn-test-mode" class="menu-btn secondary">
+                        <span class="btn-icon">🎯</span>
+                        <span class="btn-text">Test Mode</span>
+                        <span class="btn-desc">Decide first, then get feedback</span>
+                    </button>
+                    <button id="btn-stats" class="menu-btn tertiary">
+                        <span class="btn-icon">📊</span>
+                        <span class="btn-text">Statistics</span>
+                        <span class="btn-desc">View your progress</span>
+                    </button>
+                    <button id="btn-strategy-chart" class="menu-btn tertiary">
+                        <span class="btn-icon">📋</span>
+                        <span class="btn-text">Strategy Chart</span>
+                        <span class="btn-desc">Reference guide</span>
+                    </button>
+                </div>
+
+                <div class="rules-info">
+                    <p>Vegas Rules: 6 Deck • S17 • DAS • No Surrender</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <header class="game-header">
+                <button id="btn-back" class="icon-btn">←</button>
+                <div class="mode-indicator">
+                    <span id="mode-label">Learning Mode</span>
+                </div>
+                <button id="btn-toggle-mode" class="icon-btn">⚙</button>
+            </header>
+
+            <div class="game-area">
+                <!-- Dealer Section -->
+                <div class="dealer-section">
+                    <div class="section-label">DEALER</div>
+                    <div id="dealer-hand" class="hand"></div>
+                    <div id="dealer-total" class="hand-total"></div>
+                </div>
+
+                <!-- Strategy Tip Section -->
+                <div id="strategy-section" class="strategy-section hidden">
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <span class="strategy-icon">💡</span>
+                            <span>Optimal Play</span>
+                        </div>
+                        <div id="strategy-action" class="strategy-action"></div>
+                        <div id="strategy-explanation" class="strategy-explanation"></div>
+                    </div>
+                </div>
+
+                <!-- Feedback Section (Test Mode) -->
+                <div id="feedback-section" class="feedback-section hidden">
+                    <div class="feedback-card correct">
+                        <div class="feedback-icon">✓</div>
+                        <div class="feedback-text">Correct!</div>
+                    </div>
+                </div>
+
+                <!-- Player Section -->
+                <div class="player-section">
+                    <div id="player-total" class="hand-total"></div>
+                    <div id="player-hand" class="hand"></div>
+                    <div class="section-label">YOUR HAND</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="action-buttons" class="action-buttons">
+                <button id="btn-hit" class="action-btn hit">HIT</button>
+                <button id="btn-stand" class="action-btn stand">STAND</button>
+                <button id="btn-double" class="action-btn double">DOUBLE</button>
+                <button id="btn-split" class="action-btn split" disabled>SPLIT</button>
+            </div>
+
+            <!-- Next Hand Button -->
+            <div id="next-hand-section" class="next-hand-section hidden">
+                <div id="hand-result" class="hand-result"></div>
+                <button id="btn-next-hand" class="action-btn next">NEXT HAND</button>
+            </div>
+
+            <!-- Session Stats Bar -->
+            <div class="session-stats">
+                <div class="stat">
+                    <span class="stat-value" id="stat-correct">0</span>
+                    <span class="stat-label">Correct</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="stat-incorrect">0</span>
+                    <span class="stat-label">Incorrect</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="stat-accuracy">0%</span>
+                    <span class="stat-label">Accuracy</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Screen -->
+        <div id="stats-screen" class="screen">
+            <header class="game-header">
+                <button id="btn-back-stats" class="icon-btn">←</button>
+                <div class="mode-indicator">
+                    <span>Statistics</span>
+                </div>
+                <button id="btn-reset-stats" class="icon-btn text-btn">Reset</button>
+            </header>
+
+            <div class="stats-container">
+                <div class="stats-overview">
+                    <div class="big-stat">
+                        <span class="big-stat-value" id="overall-accuracy">0%</span>
+                        <span class="big-stat-label">Overall Accuracy</span>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-box">
+                            <span class="stat-box-value" id="total-hands">0</span>
+                            <span class="stat-box-label">Hands Played</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-box-value" id="total-correct">0</span>
+                            <span class="stat-box-label">Correct</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-breakdown">
+                    <h3>Accuracy by Hand Type</h3>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Hard Totals</span>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill" id="hard-bar"></div>
+                        </div>
+                        <span class="breakdown-value" id="hard-accuracy">0%</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Soft Totals</span>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill" id="soft-bar"></div>
+                        </div>
+                        <span class="breakdown-value" id="soft-accuracy">0%</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Pairs</span>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill" id="pairs-bar"></div>
+                        </div>
+                        <span class="breakdown-value" id="pairs-accuracy">0%</span>
+                    </div>
+                </div>
+
+                <div class="trouble-spots">
+                    <h3>Most Missed Situations</h3>
+                    <div id="missed-list" class="missed-list">
+                        <p class="no-data">Play more hands to see trouble spots</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Chart Screen -->
+        <div id="chart-screen" class="screen">
+            <header class="game-header">
+                <button id="btn-back-chart" class="icon-btn">←</button>
+                <div class="mode-indicator">
+                    <span>Strategy Chart</span>
+                </div>
+                <div class="spacer"></div>
+            </header>
+
+            <div class="chart-container">
+                <div class="chart-tabs">
+                    <button class="chart-tab active" data-chart="hard">Hard</button>
+                    <button class="chart-tab" data-chart="soft">Soft</button>
+                    <button class="chart-tab" data-chart="pairs">Pairs</button>
+                </div>
+
+                <div class="chart-legend">
+                    <span class="legend-item hit">H = Hit</span>
+                    <span class="legend-item stand">S = Stand</span>
+                    <span class="legend-item double">D = Double</span>
+                    <span class="legend-item split">P = Split</span>
+                </div>
+
+                <div id="strategy-chart-display" class="chart-display">
+                    <!-- Chart will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/strategy.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
