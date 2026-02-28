@@ -23,7 +23,11 @@ const Game = {
         mode: 'learning', // 'learning' or 'test'
         awaitingDecision: false,
         lastOptimalPlay: null,
-        handComplete: false
+        handComplete: false,
+        // Betting state
+        currentBet: 25,
+        doubled: false,
+        lastPayout: 0
     },
 
     // Card values and suits
@@ -37,6 +41,46 @@ const Game = {
         this.state.shoe = this.createShoe();
         this.shuffleShoe();
         this.state.gamePhase = 'betting';
+        this.state.currentBet = 25;
+        this.state.doubled = false;
+    },
+
+    /**
+     * Set the current bet amount
+     */
+    setBet(amount) {
+        this.state.currentBet = amount;
+    },
+
+    /**
+     * Get the current bet amount
+     */
+    getBet() {
+        return this.state.currentBet;
+    },
+
+    /**
+     * Calculate payout for the hand result
+     * @returns {number} - Amount won/lost (positive = win, negative = loss)
+     */
+    calculatePayout(result) {
+        const bet = this.state.currentBet;
+        const multiplier = this.state.doubled ? 2 : 1;
+        const actualBet = bet * multiplier;
+
+        switch (result.result) {
+            case 'blackjack':
+                // Blackjack pays 3:2
+                return bet * 1.5;
+            case 'win':
+                return actualBet;
+            case 'lose':
+                return -actualBet;
+            case 'push':
+                return 0;
+            default:
+                return 0;
+        }
     },
 
     /**
@@ -106,6 +150,8 @@ const Game = {
         this.state.handComplete = false;
         this.state.awaitingDecision = false;
         this.state.lastOptimalPlay = null;
+        this.state.doubled = false;
+        this.state.lastPayout = 0;
 
         // Deal initial cards
         this.state.playerHand.push(this.dealCard());
@@ -267,6 +313,7 @@ const Game = {
      * Player doubles down
      */
     double() {
+        this.state.doubled = true;
         this.state.playerHand.push(this.dealCard());
         const info = this.getHandInfo(this.state.playerHand);
 
@@ -388,7 +435,11 @@ const Game = {
             optimalPlay: this.state.lastOptimalPlay,
             handComplete: this.state.handComplete,
             canDouble: this.state.playerHand.length === 2,
-            canSplit: this.getHandInfo(this.state.playerHand).isPair && this.state.splitHands.length === 0
+            canSplit: this.getHandInfo(this.state.playerHand).isPair && this.state.splitHands.length === 0,
+            // Betting info
+            currentBet: this.state.currentBet,
+            doubled: this.state.doubled,
+            lastPayout: this.state.lastPayout
         };
     }
 };

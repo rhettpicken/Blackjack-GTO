@@ -6,6 +6,9 @@
 const Stats = {
     STORAGE_KEY: 'blackjack_gto_stats',
 
+    BANKROLL_KEY: 'blackjack_gto_bankroll',
+    DEFAULT_BANKROLL: 1000,
+
     // Default stats structure
     defaultStats: {
         totalHands: 0,
@@ -18,14 +21,21 @@ const Stats = {
         },
         missedSituations: {}, // { "16 vs 10": count }
         sessions: [],
-        lastPlayed: null
+        lastPlayed: null,
+        // Money stats
+        totalWagered: 0,
+        totalWon: 0,
+        totalLost: 0,
+        biggestWin: 0,
+        biggestLoss: 0
     },
 
     // Current session stats
     session: {
         correct: 0,
         incorrect: 0,
-        hands: []
+        hands: [],
+        profit: 0
     },
 
     /**
@@ -35,12 +45,95 @@ const Stats = {
         try {
             const saved = localStorage.getItem(this.STORAGE_KEY);
             if (saved) {
-                return JSON.parse(saved);
+                const stats = JSON.parse(saved);
+                // Ensure money stats exist (for upgrades from older versions)
+                if (stats.totalWagered === undefined) {
+                    stats.totalWagered = 0;
+                    stats.totalWon = 0;
+                    stats.totalLost = 0;
+                    stats.biggestWin = 0;
+                    stats.biggestLoss = 0;
+                }
+                return stats;
             }
         } catch (e) {
             console.error('Failed to load stats:', e);
         }
         return { ...this.defaultStats };
+    },
+
+    /**
+     * Load bankroll from localStorage
+     */
+    loadBankroll() {
+        try {
+            const saved = localStorage.getItem(this.BANKROLL_KEY);
+            if (saved) {
+                return parseFloat(saved);
+            }
+        } catch (e) {
+            console.error('Failed to load bankroll:', e);
+        }
+        return this.DEFAULT_BANKROLL;
+    },
+
+    /**
+     * Save bankroll to localStorage
+     */
+    saveBankroll(amount) {
+        try {
+            localStorage.setItem(this.BANKROLL_KEY, amount.toString());
+        } catch (e) {
+            console.error('Failed to save bankroll:', e);
+        }
+    },
+
+    /**
+     * Update bankroll after a hand
+     * @param {number} amount - Positive for win, negative for loss, 0 for push
+     * @returns {number} - New bankroll
+     */
+    updateBankroll(amount) {
+        let bankroll = this.loadBankroll();
+        bankroll += amount;
+        this.saveBankroll(bankroll);
+
+        // Update session profit
+        this.session.profit += amount;
+
+        // Update all-time stats
+        const stats = this.load();
+        if (amount > 0) {
+            stats.totalWon += amount;
+            if (amount > stats.biggestWin) {
+                stats.biggestWin = amount;
+            }
+        } else if (amount < 0) {
+            stats.totalLost += Math.abs(amount);
+            if (Math.abs(amount) > stats.biggestLoss) {
+                stats.biggestLoss = Math.abs(amount);
+            }
+        }
+        this.save(stats);
+
+        return bankroll;
+    },
+
+    /**
+     * Record a wager
+     */
+    recordWager(amount) {
+        const stats = this.load();
+        stats.totalWagered += amount;
+        this.save(stats);
+    },
+
+    /**
+     * Reset bankroll to default
+     */
+    resetBankroll() {
+        this.saveBankroll(this.DEFAULT_BANKROLL);
+        return this.DEFAULT_BANKROLL;
     },
 
     /**
@@ -115,7 +208,8 @@ const Stats = {
             correct: this.session.correct,
             incorrect: this.session.incorrect,
             total,
-            accuracy
+            accuracy,
+            profit: this.session.profit
         };
     },
 
@@ -130,7 +224,8 @@ const Stats = {
                 date: new Date().toISOString(),
                 correct: this.session.correct,
                 incorrect: this.session.incorrect,
-                hands: this.session.hands.length
+                hands: this.session.hands.length,
+                profit: this.session.profit
             });
             // Keep only last 30 sessions
             if (stats.sessions.length > 30) {
@@ -142,7 +237,8 @@ const Stats = {
         this.session = {
             correct: 0,
             incorrect: 0,
-            hands: []
+            hands: [],
+            profit: 0
         };
     },
 
@@ -175,6 +271,9 @@ const Stats = {
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
 
+        // Calculate all-time profit
+        const allTimeProfit = stats.totalWon - stats.totalLost;
+
         return {
             totalHands: stats.totalHands,
             correctDecisions: stats.correctDecisions,
@@ -188,7 +287,15 @@ const Stats = {
             pairsTotal: stats.byHandType.pairs.total,
             missedSituations: missedList,
             lastPlayed: stats.lastPlayed,
-            recentSessions: stats.sessions.slice(-10)
+            recentSessions: stats.sessions.slice(-10),
+            // Money stats
+            bankroll: this.loadBankroll(),
+            allTimeProfit,
+            totalWagered: stats.totalWagered,
+            totalWon: stats.totalWon,
+            totalLost: stats.totalLost,
+            biggestWin: stats.biggestWin,
+            biggestLoss: stats.biggestLoss
         };
     },
 
@@ -199,9 +306,11 @@ const Stats = {
         this.session = {
             correct: 0,
             incorrect: 0,
-            hands: []
+            hands: [],
+            profit: 0
         };
         this.save({ ...this.defaultStats });
+        this.resetBankroll();
     },
 
     /**

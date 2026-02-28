@@ -35,6 +35,14 @@ const UI = {
         this.elements.btnStats = document.getElementById('btn-stats');
         this.elements.btnStrategyChart = document.getElementById('btn-strategy-chart');
 
+        // Betting elements
+        this.elements.bettingSection = document.getElementById('betting-section');
+        this.elements.betButtons = document.querySelectorAll('.bet-btn');
+        this.elements.currentBetDisplay = document.getElementById('current-bet-display');
+        this.elements.btnDeal = document.getElementById('btn-deal');
+        this.elements.bankrollValue = document.getElementById('bankroll-value');
+        this.elements.gameArea = document.querySelector('.game-area');
+
         // Game elements
         this.elements.btnBack = document.getElementById('btn-back');
         this.elements.btnToggleMode = document.getElementById('btn-toggle-mode');
@@ -50,6 +58,7 @@ const UI = {
         this.elements.actionButtons = document.getElementById('action-buttons');
         this.elements.nextHandSection = document.getElementById('next-hand-section');
         this.elements.handResult = document.getElementById('hand-result');
+        this.elements.moneyResult = document.getElementById('money-result');
 
         // Action buttons
         this.elements.btnHit = document.getElementById('btn-hit');
@@ -60,8 +69,8 @@ const UI = {
 
         // Session stats
         this.elements.statCorrect = document.getElementById('stat-correct');
-        this.elements.statIncorrect = document.getElementById('stat-incorrect');
         this.elements.statAccuracy = document.getElementById('stat-accuracy');
+        this.elements.statSessionProfit = document.getElementById('stat-session-profit');
 
         // Stats screen
         this.elements.btnBackStats = document.getElementById('btn-back-stats');
@@ -76,6 +85,12 @@ const UI = {
         this.elements.softAccuracy = document.getElementById('soft-accuracy');
         this.elements.pairsAccuracy = document.getElementById('pairs-accuracy');
         this.elements.missedList = document.getElementById('missed-list');
+
+        // Money stats
+        this.elements.currentBankroll = document.getElementById('current-bankroll');
+        this.elements.totalProfit = document.getElementById('total-profit');
+        this.elements.biggestWin = document.getElementById('biggest-win');
+        this.elements.biggestLoss = document.getElementById('biggest-loss');
 
         // Chart screen
         this.elements.btnBackChart = document.getElementById('btn-back-chart');
@@ -97,12 +112,18 @@ const UI = {
         this.elements.btnBack.addEventListener('click', () => this.exitGame());
         this.elements.btnToggleMode.addEventListener('click', () => this.toggleMode());
 
+        // Betting buttons
+        this.elements.betButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => this.selectBet(parseInt(e.target.dataset.amount)));
+        });
+        this.elements.btnDeal.addEventListener('click', () => this.dealNewHand());
+
         // Action buttons
         this.elements.btnHit.addEventListener('click', () => this.handleAction('hit'));
         this.elements.btnStand.addEventListener('click', () => this.handleAction('stand'));
         this.elements.btnDouble.addEventListener('click', () => this.handleAction('double'));
         this.elements.btnSplit.addEventListener('click', () => this.handleAction('split'));
-        this.elements.btnNextHand.addEventListener('click', () => this.dealNewHand());
+        this.elements.btnNextHand.addEventListener('click', () => this.showBettingSection());
 
         // Stats screen
         this.elements.btnBackStats.addEventListener('click', () => this.showScreen('menu'));
@@ -147,7 +168,8 @@ const UI = {
         Stats.resetSession();
         this.showScreen('game');
         this.updateModeLabel();
-        this.dealNewHand();
+        this.updateBankrollDisplay();
+        this.showBettingSection();
     },
 
     /**
@@ -155,6 +177,102 @@ const UI = {
      */
     exitGame() {
         this.showScreen('menu');
+    },
+
+    /**
+     * Show the betting section
+     */
+    showBettingSection() {
+        this.elements.bettingSection.classList.remove('hidden');
+        this.elements.gameArea.classList.add('hidden');
+        this.elements.actionButtons.classList.add('hidden');
+        this.elements.nextHandSection.classList.add('hidden');
+        this.updateBankrollDisplay();
+        this.updateBetButtons();
+    },
+
+    /**
+     * Hide the betting section
+     */
+    hideBettingSection() {
+        this.elements.bettingSection.classList.add('hidden');
+        this.elements.gameArea.classList.remove('hidden');
+    },
+
+    /**
+     * Select a bet amount
+     */
+    selectBet(amount) {
+        const bankroll = Stats.loadBankroll();
+        if (amount > bankroll) return;
+
+        Game.setBet(amount);
+        this.elements.currentBetDisplay.textContent = '$' + amount;
+
+        // Update selected state
+        this.elements.betButtons.forEach(btn => {
+            btn.classList.toggle('selected', parseInt(btn.dataset.amount) === amount);
+        });
+    },
+
+    /**
+     * Update bet buttons based on bankroll
+     */
+    updateBetButtons() {
+        const bankroll = Stats.loadBankroll();
+        const currentBet = Game.getBet();
+
+        this.elements.betButtons.forEach(btn => {
+            const amount = parseInt(btn.dataset.amount);
+            btn.disabled = amount > bankroll;
+            btn.classList.toggle('selected', amount === currentBet);
+        });
+
+        // If current bet is higher than bankroll, select highest available
+        if (currentBet > bankroll) {
+            const availableBets = [5, 10, 25, 50, 100].filter(b => b <= bankroll);
+            if (availableBets.length > 0) {
+                this.selectBet(availableBets[availableBets.length - 1]);
+            }
+        }
+
+        this.elements.currentBetDisplay.textContent = '$' + Game.getBet();
+
+        // Disable deal if no valid bet
+        this.elements.btnDeal.disabled = bankroll < 5;
+    },
+
+    /**
+     * Update bankroll display
+     */
+    updateBankrollDisplay() {
+        const bankroll = Stats.loadBankroll();
+        this.elements.bankrollValue.textContent = this.formatMoney(bankroll);
+        this.elements.bankrollValue.classList.toggle('negative', bankroll < Stats.DEFAULT_BANKROLL);
+    },
+
+    /**
+     * Format money for display
+     */
+    formatMoney(amount) {
+        if (amount >= 0) {
+            return '$' + amount.toLocaleString();
+        } else {
+            return '-$' + Math.abs(amount).toLocaleString();
+        }
+    },
+
+    /**
+     * Format money with sign
+     */
+    formatMoneyWithSign(amount) {
+        if (amount > 0) {
+            return '+$' + amount.toLocaleString();
+        } else if (amount < 0) {
+            return '-$' + Math.abs(amount).toLocaleString();
+        } else {
+            return '$0';
+        }
     },
 
     /**
@@ -179,6 +297,21 @@ const UI = {
      * Deal a new hand
      */
     dealNewHand() {
+        // Check if we can afford the bet
+        const bankroll = Stats.loadBankroll();
+        const bet = Game.getBet();
+
+        if (bet > bankroll) {
+            this.updateBetButtons();
+            return;
+        }
+
+        // Record the wager
+        Stats.recordWager(bet);
+
+        // Hide betting, show game
+        this.hideBettingSection();
+
         const result = Game.dealNewHand();
 
         this.updateUI();
@@ -186,8 +319,23 @@ const UI = {
 
         if (result) {
             // Immediate blackjack/push
-            this.showHandResult(result);
+            this.processHandResult(result);
         }
+    },
+
+    /**
+     * Process hand result and update bankroll
+     */
+    processHandResult(result) {
+        const payout = Game.calculatePayout(result);
+        const newBankroll = Stats.updateBankroll(payout);
+
+        // Store payout for display
+        Game.state.lastPayout = payout;
+
+        this.showHandResult(result, payout);
+        this.updateBankrollDisplay();
+        this.updateSessionStats();
     },
 
     /**
@@ -239,12 +387,11 @@ const UI = {
         }
 
         this.updateUI();
-        this.updateSessionStats();
 
         // Handle action results
         if (actionResult) {
             if (actionResult.busted || actionResult.result) {
-                this.showHandResult(actionResult.result || actionResult);
+                this.processHandResult(actionResult.result || actionResult);
             } else if (actionResult.split) {
                 // Continue playing after split
                 Game.state.awaitingDecision = true;
@@ -391,9 +538,22 @@ const UI = {
     /**
      * Show hand result
      */
-    showHandResult(result) {
+    showHandResult(result, payout) {
         this.elements.handResult.textContent = result.message;
         this.elements.handResult.className = 'hand-result ' + result.result;
+
+        // Show money result
+        if (payout !== undefined) {
+            this.elements.moneyResult.textContent = this.formatMoneyWithSign(payout);
+            if (payout > 0) {
+                this.elements.moneyResult.className = 'money-result positive';
+            } else if (payout < 0) {
+                this.elements.moneyResult.className = 'money-result negative';
+            } else {
+                this.elements.moneyResult.className = 'money-result neutral';
+            }
+        }
+
         this.elements.nextHandSection.classList.remove('hidden');
         this.elements.actionButtons.classList.add('hidden');
     },
@@ -412,8 +572,17 @@ const UI = {
     updateSessionStats() {
         const sessionStats = Stats.getSessionStats();
         this.elements.statCorrect.textContent = sessionStats.correct;
-        this.elements.statIncorrect.textContent = sessionStats.incorrect;
         this.elements.statAccuracy.textContent = sessionStats.accuracy + '%';
+
+        // Session profit
+        const profitText = this.formatMoneyWithSign(sessionStats.profit);
+        this.elements.statSessionProfit.textContent = profitText;
+        this.elements.statSessionProfit.classList.remove('positive', 'negative');
+        if (sessionStats.profit > 0) {
+            this.elements.statSessionProfit.classList.add('positive');
+        } else if (sessionStats.profit < 0) {
+            this.elements.statSessionProfit.classList.add('negative');
+        }
     },
 
     /**
@@ -434,6 +603,21 @@ const UI = {
         this.elements.hardAccuracy.textContent = stats.hardAccuracy + '%';
         this.elements.softAccuracy.textContent = stats.softAccuracy + '%';
         this.elements.pairsAccuracy.textContent = stats.pairsAccuracy + '%';
+
+        // Update money stats
+        this.elements.currentBankroll.textContent = this.formatMoney(stats.bankroll);
+        this.elements.currentBankroll.classList.toggle('positive', stats.bankroll >= Stats.DEFAULT_BANKROLL);
+        this.elements.currentBankroll.classList.toggle('negative', stats.bankroll < Stats.DEFAULT_BANKROLL);
+
+        this.elements.totalProfit.textContent = this.formatMoneyWithSign(stats.allTimeProfit);
+        this.elements.totalProfit.classList.toggle('positive', stats.allTimeProfit > 0);
+        this.elements.totalProfit.classList.toggle('negative', stats.allTimeProfit < 0);
+
+        this.elements.biggestWin.textContent = '+$' + stats.biggestWin.toLocaleString();
+        this.elements.biggestWin.classList.add('positive');
+
+        this.elements.biggestLoss.textContent = '-$' + stats.biggestLoss.toLocaleString();
+        this.elements.biggestLoss.classList.add('negative');
 
         // Update missed situations
         if (stats.missedSituations.length > 0) {
