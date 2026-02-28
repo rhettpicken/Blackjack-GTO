@@ -126,9 +126,9 @@ body {
 
 .game-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 900;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em;
     text-align: center;
     color: var(--neon-cyan);
     text-shadow:
@@ -158,8 +158,8 @@ body {
 .game-title span {
     display: block;
     color: var(--neon-pink);
-    font-size: 1.8rem;
-    letter-spacing: 0.3em;
+    font-size: 1.4rem;
+    letter-spacing: 0.2em;
     margin-top: 0.5rem;
     text-shadow:
         0 0 10px var(--neon-pink-glow),
