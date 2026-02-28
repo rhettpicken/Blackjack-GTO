@@ -390,8 +390,12 @@ const UI = {
 
         // Handle action results
         if (actionResult) {
-            if (actionResult.busted || actionResult.result) {
-                this.processHandResult(actionResult.result || actionResult);
+            if (actionResult.busted) {
+                // Hit returned { busted: true, result: {...} }
+                this.processHandResult(actionResult.result);
+            } else if (actionResult.message) {
+                // Stand/double returned { result: 'win/lose/push', message: '...' }
+                this.processHandResult(actionResult);
             } else if (actionResult.split) {
                 // Continue playing after split
                 Game.state.awaitingDecision = true;
