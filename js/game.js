@@ -253,7 +253,16 @@ const Game = {
      */
     checkAction(action) {
         const optimal = this.state.lastOptimalPlay;
-        if (!optimal) return { correct: true };
+
+        // If no optimal play calculated, compute it now
+        if (!optimal) {
+            const freshOptimal = this.getOptimalPlay();
+            if (!freshOptimal) {
+                return { correct: true, handType: 'hard', situation: 'unknown', playerAction: action.toUpperCase(), optimalAction: action.toUpperCase() };
+            }
+            this.state.lastOptimalPlay = freshOptimal;
+            return this.checkAction(action); // Retry with optimal play
+        }
 
         const actionMap = {
             'hit': 'H',
@@ -277,7 +286,7 @@ const Game = {
             optimalAction: optimal.action,
             explanation: optimal.explanation,
             situation,
-            handType: optimal.chart
+            handType: optimal.chart || 'hard'  // Fallback to 'hard' if somehow missing
         };
     },
 

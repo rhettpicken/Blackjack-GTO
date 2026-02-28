@@ -159,6 +159,11 @@ const Stats = {
     recordDecision(correct, handType, situation, playerAction, correctAction) {
         const stats = this.load();
 
+        // Ensure handType is valid, default to 'hard'
+        if (!handType || !stats.byHandType[handType]) {
+            handType = 'hard';
+        }
+
         stats.totalHands++;
 
         if (correct) {
@@ -167,13 +172,15 @@ const Stats = {
         } else {
             stats.incorrectDecisions++;
             // Track missed situations
-            if (!stats.missedSituations[situation]) {
-                stats.missedSituations[situation] = {
-                    count: 0,
-                    correctAction: correctAction
-                };
+            if (situation) {
+                if (!stats.missedSituations[situation]) {
+                    stats.missedSituations[situation] = {
+                        count: 0,
+                        correctAction: correctAction
+                    };
+                }
+                stats.missedSituations[situation].count++;
             }
-            stats.missedSituations[situation].count++;
         }
 
         stats.byHandType[handType].total++;
